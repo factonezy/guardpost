@@ -1,3 +1,4 @@
+import 'package:guardpost/api_keys.dart';
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
@@ -19,7 +20,7 @@ class BreachCheckService {
       final response = await http.get(
         Uri.parse('$_hibpBaseUrl/breachedaccount/$email'),
         headers: {
-          'hibp-api-key': '',
+          'hibp-api-key': ApiKeys.hibpApiKey,
           'User-Agent': _hibpUserAgent,
         },
       );
