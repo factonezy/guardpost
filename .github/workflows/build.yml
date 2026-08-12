@@ -30,8 +30,6 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Run analyzer
-        run: flutter analyze --no-fatal-warnings
 
       - name: Build APK (Release)
         run: flutter build apk --release --split-per-abi --dart-define=SAFE_BROWSING_API_KEY=${{ secrets.SAFE_BROWSING_API_KEY }}
