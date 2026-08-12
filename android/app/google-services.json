@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1013898861603",
+    "project_id": "guardpost-9e32c",
+    "storage_bucket": "guardpost-9e32c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1013898861603:android:4c510a3d7f844fca056596",
+        "android_client_info": {
+          "package_name": "com.guardpost.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBST2enfKzgR3dsBJtXc-zdl5n4ANgBYx0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
