@@ -32,7 +32,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  fonts:
-    - family: GoogleFonts
-      fonts:
-        - asset: packages/google_fonts/fonts/Inter-Regular.ttf
