@@ -6,7 +6,7 @@ class PhishingScanService {
       'https://safebrowsing.googleapis.com/v4/threatMatches:find';
 
   /// Scan URL for phishing/malware using Google Safe Browsing
-  Future<PhishingResult> scanUrl(String url, {String apiKey = ''}) async {
+  Future<PhishingResult> scanUrl(String url, {String apiKey = ApiKeys.safeBrowsingApiKey}) async {
     try {
       // Add protocol if missing
       if (!url.startsWith('http://') && !url.startsWith('https://')) {
