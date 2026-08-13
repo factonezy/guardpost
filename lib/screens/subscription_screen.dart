@@ -12,6 +12,7 @@ class SubscriptionScreen extends StatefulWidget {
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
   final _subscriptionService = SubscriptionService();
   bool _isLoading = false;
+  String _selectedPlan = 'yearly';
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +75,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     'Monthly', '\$2.99', '/mo',
                     'Billed monthly',
                     false,
-                    () => _purchase('monthly'),
+                    _selectedPlan == 'monthly',
+                    () => setState(() => _selectedPlan = 'monthly'),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -83,7 +85,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     'Yearly', '\$29.99', '/yr',
                     'Save \$6! Best value',
                     true,
-                    () => _purchase('yearly'),
+                    _selectedPlan == 'yearly',
+                    () => setState(() => _selectedPlan = 'yearly'),
                   ),
                 ),
               ],
@@ -158,7 +161,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   Widget _buildPricingCard(
     String title, String price, String period,
-    String subtitle, bool popular, VoidCallback onTap,
+    String subtitle, bool popular, bool selected, VoidCallback onTap,
   ) {
     return GestureDetector(
       onTap: onTap,
@@ -168,8 +171,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           color: AppTheme.cardColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: popular ? AppTheme.primaryColor : AppTheme.borderColor,
-            width: popular ? 2 : 1,
+            color: selected ? AppTheme.primaryColor : AppTheme.borderColor,
+            width: selected ? 2 : 1,
           ),
         ),
         child: Column(
@@ -197,27 +200,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         ),
       ),
     );
-  }
-
-  Future<void> _purchase(String plan) async {
-    setState(() => _isLoading = true);
-    bool success;
-    if (plan == 'monthly') {
-      success = await _subscriptionService.purchaseMonthly();
-    } else {
-      success = await _subscriptionService.purchaseYearly();
-    }
-    setState(() => _isLoading = false);
-
-    if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Welcome to GuardPost Premium! 🎉'),
-          backgroundColor: AppTheme.successColor,
-        ),
-      );
-      Navigator.pop(context);
-    }
   }
 
   Future<void> _startTrial() async {
