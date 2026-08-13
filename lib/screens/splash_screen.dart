@@ -20,10 +20,15 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkAuth() async {
-    await Future.delayed(const Duration(milliseconds: 1500));
+    // Don't use a blind delay — Firebase restores the auth session asynchronously.
+    // authStateChanges emits the (possibly restored) user as soon as auth is ready,
+    // so a logged-in user is routed home and a guest is routed to login.
+    final user = await _authService.authState.first.timeout(
+      const Duration(seconds: 5),
+      onTimeout: () => _authService.currentUser,
+    );
     if (!mounted) return;
 
-    final user = _authService.currentUser;
     if (user != null) {
       Navigator.pushReplacementNamed(context, '/home');
     } else {

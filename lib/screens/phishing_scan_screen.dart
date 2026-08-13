@@ -37,6 +37,7 @@ class _PhishingScanScreenState extends State<PhishingScanScreen> {
       });
     } catch (e) {
       setState(() => _isLoading = false);
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.errorColor),
       );
