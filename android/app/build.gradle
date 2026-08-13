@@ -67,21 +67,21 @@ android {
                 keyPassword keystoreProperties['keyPassword']
                 storeFile file(keystoreProperties['storeFile'])
                 storePassword keystoreProperties['storePassword']
-            } else {
-                // Fallback: sign with the auto-generated debug keystore so sideload
-                // APKs are installable without a separate release keystore.
-                // Use android/key.properties with a real keystore for Play Store.
-                storeFile file(System.getProperty("user.home") + "/.android/debug.keystore")
-                storePassword "android"
-                keyAlias "androiddebugkey"
-                keyPassword "android"
             }
+            // else: no release keystore provided — buildTypes.release falls back
+            // to AGP's built-in debug signing config, which auto-creates the
+            // debug keystore if missing. Fine for local sideload / phone testing.
+            // Configure android/key.properties with a real keystore for Play Store.
         }
     }
 
     buildTypes {
         release {
-            signingConfig signingConfigs.release
+            if (keystorePropertiesFile.exists()) {
+                signingConfig signingConfigs.release
+            } else {
+                signingConfig signingConfigs.debug
+            }
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
