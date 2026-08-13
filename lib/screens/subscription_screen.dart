@@ -51,7 +51,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     'Full security suite for you & your family',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.black87.withOpacity(0.7),
+                      color: Colors.black87.withValues(alpha: 0.7),
                     ),
                   ),
                 ],
@@ -133,7 +133,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withOpacity(0.15),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(icon, color: AppTheme.primaryColor, size: 24),

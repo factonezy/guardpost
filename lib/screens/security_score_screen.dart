@@ -202,7 +202,7 @@ class _SecurityScoreScreenState extends State<SecurityScoreScreen> {
                                   width: 24,
                                   height: 24,
                                   decoration: BoxDecoration(
-                                    color: AppTheme.warningColor.withOpacity(0.2),
+                                    color: AppTheme.warningColor.withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Center(
@@ -263,7 +263,7 @@ class _SecurityScoreScreenState extends State<SecurityScoreScreen> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.15),
+                color: color.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: color, size: 24),

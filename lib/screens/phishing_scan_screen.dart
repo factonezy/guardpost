@@ -61,7 +61,7 @@ class _PhishingScanScreenState extends State<PhishingScanScreen> {
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: AppTheme.secondaryColor.withOpacity(0.15),
+                        color: AppTheme.secondaryColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Icon(Icons.link_off, size: 48, color: AppTheme.secondaryColor),
@@ -189,8 +189,8 @@ class _PhishingScanScreenState extends State<PhishingScanScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: _result!.isSafe
-                        ? AppTheme.successColor.withOpacity(0.2)
-                        : AppTheme.errorColor.withOpacity(0.2),
+                        ? AppTheme.successColor.withValues(alpha: 0.2)
+                        : AppTheme.errorColor.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
