@@ -54,12 +54,28 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {},
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Notifications will appear here when a breach is detected.'),
+                  backgroundColor: AppTheme.primaryColor,
+                ),
+              );
+            },
           ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
             onSelected: (value) async {
-              if (value == 'logout') {
+              if (value == 'profile') {
+                setState(() => _currentNavIndex = 2);
+              } else if (value == 'settings') {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Settings coming soon'),
+                    backgroundColor: AppTheme.primaryColor,
+                  ),
+                );
+              } else if (value == 'logout') {
                 await _authService.signOut();
                 if (context.mounted) {
                   Navigator.pushReplacementNamed(context, '/login');

@@ -204,10 +204,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   Future<void> _startTrial() async {
     setState(() => _isLoading = true);
-    final success = await _subscriptionService.startFreeTrial();
+    // Use the plan the user selected on this screen (Monthly/Yearly).
+    final success = _selectedPlan == 'yearly'
+        ? await _subscriptionService.purchaseYearly()
+        : await _subscriptionService.purchaseMonthly();
     setState(() => _isLoading = false);
 
-    if (success && mounted) {
+    if (!mounted) return;
+    if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('7-day free trial started! Enjoy Premium 🎉'),
@@ -215,6 +219,18 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         ),
       );
       Navigator.pop(context);
+    } else {
+      // No fake success — surface the real failure (e.g. RevenueCat not
+      // configured / offering missing) so the user knows to fix setup.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Purchase could not be completed. Check RevenueCat configuration '
+            '($_selectedPlan plan) and try again.',
+          ),
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
     }
   }
 }
