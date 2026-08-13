@@ -23,7 +23,6 @@ jobs:
       - name: Set JAVA_HOME
         run: |
           echo "JAVA_HOME=$JAVA_HOME_17_X64" >> $GITHUB_ENV
-          echo "org.gradle.java.home=$JAVA_HOME_17_X64" >> gradle.properties
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -38,12 +37,15 @@ jobs:
       - name: Analyze code
         run: flutter analyze --no-fatal-infos --no-fatal-warnings
 
-
       - name: Build APK (Release)
-        run: flutter build apk --release --split-per-abi --dart-define=SAFE_BROWSING_API_KEY=${{ secrets.SAFE_BROWSING_API_KEY }} --no-tree-shake-icons
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+        run: flutter build apk --release --split-per-abi --dart-define=SAFE_BROWSING_API_KEY=${{ secrets.SAFE_BROWSING_API_KEY }} --no-tree-shake-icons --no-daemon
 
       - name: Build APK (Universal)
-        run: flutter build apk --release --dart-define=SAFE_BROWSING_API_KEY=${{ secrets.SAFE_BROWSING_API_KEY }} --no-tree-shake-icons
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+        run: flutter build apk --release --dart-define=SAFE_BROWSING_API_KEY=${{ secrets.SAFE_BROWSING_API_KEY }} --no-tree-shake-icons --no-daemon
 
       - name: Upload APKs
         uses: actions/upload-artifact@v4
