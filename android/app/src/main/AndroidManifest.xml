@@ -12,9 +12,9 @@
     <application
         android:label="GuardPost"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher_round"
+        android:icon="@android:drawable/sym_def_app_icon"
         android:usesCleartextTraffic="false"
-        android:theme="@style/LaunchTheme"
+        android:theme="@android:style/Theme.Light.NoTitleBar"
         android:networkSecurityConfig="@xml/network_security_config">
 
         <activity
@@ -22,11 +22,11 @@
             android:exported="true"
             android:launchMode="singleTop"
             android:taskAffinity=""
-            android:theme="@style/LaunchTheme"
+            android:theme="@android:style/Theme.Light.NoTitleBar"
             android:windowSoftInputMode="adjustResize">
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
-                android:resource="@style/NormalTheme"/>
+                android:resource="@android:style/Theme.Light.NoTitleBar"/>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
