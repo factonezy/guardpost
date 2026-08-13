@@ -35,10 +35,10 @@ jobs:
 
 
       - name: Build APK (Release)
-        run: flutter build apk --release --split-per-abi --dart-define=SAFE_BROWSING_API_KEY=${{ secrets.SAFE_BROWSING_API_KEY }}
+        run: flutter build apk --release --split-per-abi --dart-define=SAFE_BROWSING_API_KEY=${{ secrets.SAFE_BROWSING_API_KEY }} --no-tree-shake-icons
 
       - name: Build APK (Universal)
-        run: flutter build apk --release --dart-define=SAFE_BROWSING_API_KEY=${{ secrets.SAFE_BROWSING_API_KEY }}
+        run: flutter build apk --release --dart-define=SAFE_BROWSING_API_KEY=${{ secrets.SAFE_BROWSING_API_KEY }} --no-tree-shake-icons
 
       - name: Upload APKs
         uses: actions/upload-artifact@v4
