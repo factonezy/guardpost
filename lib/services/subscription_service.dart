@@ -6,10 +6,6 @@ class SubscriptionService {
   static const String _expiryKey = 'premium_expiry';
   static const String _trialUsedKey = 'trial_used';
 
-  // RevenueCat API keys - REPLACE WITH YOUR KEYS
-  static const String _revenueCatApiKey = 'appl_xxxxxxxxxxxx';
-  static const String _revenueCatPublicKey = 'goog_xxxxxxxxxxxx';
-
   bool _isPremium = false;
   DateTime? _expiryDate;
   bool _isLoading = false;

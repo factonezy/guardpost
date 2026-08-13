@@ -104,19 +104,33 @@ class BreachCheckService {
     } else {
       feedback.add('Password kam se kam 8 characters ka hona chahiye');
     }
-    if (password.length >= 12) score += 10;
+    if (password.length >= 12) {
+      score += 10;
+    }
 
-    if (password.contains(RegExp(r'[a-z]'))) score += 15;
-    else feedback.add('Ek lowercase letter hona chahiye');
+    if (password.contains(RegExp(r'[a-z]'))) {
+      score += 15;
+    } else {
+      feedback.add('Ek lowercase letter hona chahiye');
+    }
 
-    if (password.contains(RegExp(r'[A-Z]'))) score += 15;
-    else feedback.add('Ek uppercase letter hona chahiye');
+    if (password.contains(RegExp(r'[A-Z]'))) {
+      score += 15;
+    } else {
+      feedback.add('Ek uppercase letter hona chahiye');
+    }
 
-    if (password.contains(RegExp(r'[0-9]'))) score += 15;
-    else feedback.add('Ek digit hona chahiye');
+    if (password.contains(RegExp(r'[0-9]'))) {
+      score += 15;
+    } else {
+      feedback.add('Ek digit hona chahiye');
+    }
 
-    if (password.contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>]'))) score += 20;
-    else feedback.add('Ek special character hona chahiye (!@#\$%^&*)');
+    if (password.contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>]'))) {
+      score += 20;
+    } else {
+      feedback.add('Ek special character hona chahiye (!@#\$%^&*)');
+    }
 
     String strength;
     ColorClass color;

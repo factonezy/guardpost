@@ -8,7 +8,6 @@ import 'screens/password_check_screen.dart';
 import 'screens/phishing_scan_screen.dart';
 import 'screens/subscription_screen.dart';
 import 'screens/security_score_screen.dart';
-import 'services/auth_service.dart';
 import 'theme/app_theme.dart';
 
 void main() async {

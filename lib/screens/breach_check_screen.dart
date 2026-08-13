@@ -66,7 +66,7 @@ class _BreachCheckScreenState extends State<BreachCheckScreen> {
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: AppTheme.errorColor.withOpacity(0.15),
+                        color: AppTheme.errorColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Icon(Icons.email_outlined, size: 48, color: AppTheme.errorColor),
@@ -199,9 +199,9 @@ class _BreachCheckScreenState extends State<BreachCheckScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppTheme.warningColor.withOpacity(0.1),
+                  color: AppTheme.warningColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppTheme.warningColor.withOpacity(0.3)),
+                  border: Border.all(color: AppTheme.warningColor.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
