@@ -70,7 +70,7 @@ We may update this policy. Users will be notified of material changes via the ap
 
 ## Contact Us
 
-Email: guardpost.app@email.com  
+Email: factonezy@gmail.com  
 Website: https://factonezy.github.io/guardpost
 
 ---
