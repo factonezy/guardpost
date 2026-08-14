@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../theme/app_theme.dart';
 import '../services/auth_service.dart';
 import '../services/subscription_service.dart';
+import '../services/notification_service.dart';
 import '../models/security_scan.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -54,14 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Notifications will appear here when a breach is detected.'),
-                  backgroundColor: AppTheme.primaryColor,
-                ),
-              );
-            },
+            onPressed: _onNotificationBell,
           ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
@@ -69,12 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
               if (value == 'profile') {
                 setState(() => _currentNavIndex = 2);
               } else if (value == 'settings') {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Settings coming soon'),
-                    backgroundColor: AppTheme.primaryColor,
-                  ),
-                );
+                _showSettings(context);
               } else if (value == 'logout') {
                 await _authService.signOut();
                 if (context.mounted) {
@@ -536,13 +527,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.pushNamed(context, '/subscription');
                   }),
                   const Divider(color: AppTheme.borderColor),
-                  _buildProfileOption(Icons.info_outline, 'About GuardPost', () {}),
+                  _buildProfileOption(Icons.info_outline, 'About GuardPost', () => _showAbout(context)),
                   const Divider(color: AppTheme.borderColor),
-                  _buildProfileOption(Icons.description_outlined, 'Privacy Policy', () {}),
+                  _buildProfileOption(Icons.description_outlined, 'Privacy Policy', () => _launchUrl('https://guardpost.app/privacy')),
                   const Divider(color: AppTheme.borderColor),
                   _buildProfileOption(Icons.logout, 'Logout', () async {
                     await _authService.signOut();
-                    if (context.mounted) {
+                    if (mounted) {
                       Navigator.pushReplacementNamed(context, '/login');
                     }
                   }),
@@ -564,12 +555,127 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<void> _runFullScan() async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Full scan starting... Check each tool individually.'),
-        backgroundColor: AppTheme.primaryColor,
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Link open nahi ho saka: $url'), backgroundColor: AppTheme.errorColor),
+        );
+      }
+    }
+  }
+
+  void _showAbout(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surfaceColor,
+        title: const Text('About GuardPost', style: TextStyle(color: Colors.white)),
+        content: const Text(
+          'GuardPost - Personal Digital Security Control Center.\n\n'
+          'Apni email, password aur links ko breaches aur scams se bachayein.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
       ),
     );
+  }
+
+  void _onNotificationBell() {
+    // Use the real notification service: request permission, then show the
+    // (currently empty) alert list. No await before showDialog, so we never
+    // touch BuildContext across an async gap.
+    NotificationService.requestPermission();
+    if (!context.mounted) return;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surfaceColor,
+        title: const Text('Notifications', style: TextStyle(color: Colors.white)),
+        content: const Text(
+          'No alerts yet. When we detect a breach for your email, you\'ll get '
+          'an instant alert here.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showSettings(BuildContext context) async {
+    final status = await Permission.notification.status;
+    final enabled = status.isGranted;
+    if (!context.mounted) return;
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.surfaceColor,
+        title: const Text('Settings', style: TextStyle(color: Colors.white)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.notifications_outlined, color: Colors.white70),
+              title: const Text('Breach Alerts', style: TextStyle(color: Colors.white)),
+              subtitle: Text(
+                enabled ? 'Enabled' : 'Disabled',
+                style: const TextStyle(color: Colors.white70),
+              ),
+              trailing: TextButton(
+                onPressed: () {
+                  // Fire-and-forget: request permission then close the dialog.
+                  Permission.notification.request();
+                  Navigator.of(ctx).pop();
+                },
+                child: const Text('Change'),
+              ),
+            ),
+            const Divider(color: AppTheme.borderColor),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.info_outline, color: Colors.white70),
+              title: const Text('About', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.of(ctx).pop();
+                _showAbout(context);
+              },
+            ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.description_outlined, color: Colors.white70),
+              title: const Text('Privacy Policy', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.of(ctx).pop();
+                _launchUrl('https://guardpost.app/privacy');
+              },
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _runFullScan() async {
+    if (!mounted) return;
+    Navigator.pushNamed(context, '/security-score');
   }
 }

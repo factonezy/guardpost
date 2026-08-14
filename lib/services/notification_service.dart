@@ -1,13 +1,31 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notifications =
       FlutterLocalNotificationsPlugin();
 
   static Future<void> initialize() async {
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const initSettings = InitializationSettings(android: androidSettings);
-    await _notifications.initialize(initSettings);
+    try {
+      // Use a real, existing notification drawable. Do NOT let a missing
+      // resource or plugin failure crash the whole app at startup.
+      const androidSettings = AndroidInitializationSettings('ic_notification');
+      const initSettings = InitializationSettings(android: androidSettings);
+      await _notifications.initialize(initSettings);
+      // Android 13+ requires explicit POST_NOTIFICATIONS permission.
+      await requestPermission();
+    } catch (e) {
+      debugPrint('NotificationService.initialize failed (non-fatal): $e');
+    }
+  }
+
+  /// Request notification permission (needed on Android 13+ / API 33+).
+  static Future<void> requestPermission() async {
+    final status = await Permission.notification.status;
+    if (status.isDenied || status.isRestricted) {
+      await Permission.notification.request();
+    }
   }
 
   static Future<void> sendBreachAlert({

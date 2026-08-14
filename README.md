@@ -56,6 +56,44 @@ flutter run
 3. Download `google-services.json` and place in `android/app/`
 4. Enable Firestore (for premium features)
 
+### 🔑 API Keys Setup (REQUIRED for Breach & Phishing features)
+
+Two core features need free API keys. Without them the app silently returns
+"no breach / safe" results. Pass them at build/run time with `--dart-define`:
+
+| Key | Used for | Get it from |
+|-----|----------|------------|
+| `HIBP_API_KEY` | Email breach check (Have I Been Pwned) | https://haveibeenpwned.com/API/Key |
+| `SAFE_BROWSING_API_KEY` | Phishing link scan (Google Safe Browsing) | https://developers.google.com/safe-browsing |
+| `REVENUECAT_API_KEY` | **Real subscriptions / payments** | https://app.revenuecat.com (create app, copy API key) |
+
+```bash
+flutter run \
+  --dart-define=HIBP_API_KEY=your_hibp_key \
+  --dart-define=SAFE_BROWSING_API_KEY=your_sb_key \
+  --dart-define=REVENUECAT_API_KEY=your_rc_key
+```
+
+> The `REVENUECAT_API_KEY` is what makes the app actually earn money. Create a
+> RevenueCat project, add the "premium" entitlement, configure products
+> (monthly / yearly with a 7-day free trial) in Google Play / App Store, and
+> the `SubscriptionService` will unlock premium only after a real purchase.
+
+### 💳 Subscriptions (RevenueCat)
+GuardPost uses **RevenueCat** for real in-app purchases (not fake). Setup:
+1. Create a RevenueCat project and copy the API key into `REVENUECAT_API_KEY`.
+2. Create products in Play Store / App Store: `monthly`, `annual` (with 7-day free trial), and a `premium` entitlement.
+3. That's it — `lib/services/subscription_service.dart` handles purchase, restore and status sync.
+
+### 📦 Release build & Play Store
+1. Generate a keystore: `keytool -genkey -v -keystore android/upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload`
+2. Copy `android/key.properties.example` → `android/key.properties` and fill values (already git-ignored).
+3. Build: `flutter build appbundle --release --dart-define=...` (upload the `.aab` to Play Console).
+
+### Notification Permission (Android 13+)
+The app requests `POST_NOTIFICATIONS` at startup (via `permission_handler`).
+The permission is already declared in `android/app/src/main/AndroidManifest.xml`.
+
 ### Building APK
 
 ```bash

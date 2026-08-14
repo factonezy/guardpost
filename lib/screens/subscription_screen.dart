@@ -58,6 +58,31 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 ],
               ),
             ),
+            if (!SubscriptionService.isConfigured)
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.warningColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppTheme.warningColor.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.info_outline, color: AppTheme.warningColor),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Subscriptions are unavailable. Configure REVENUECAT_API_KEY '
+                        'to enable purchases.',
+                        style: TextStyle(color: AppTheme.warningColor, fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             const SizedBox(height: 24),
             // Features
             ..._buildPremiumFeature(Icons.verified, 'Unlimited Breach Checks', 'Daily auto-scan for all your emails'),
@@ -113,7 +138,23 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             ),
             const SizedBox(height: 12),
             TextButton(
-              onPressed: () => _subscriptionService.restorePurchases(),
+              onPressed: () async {
+                final scaffoldMessenger = ScaffoldMessenger.of(context);
+                final restored = await _subscriptionService.restorePurchases();
+                if (!mounted) return;
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      restored
+                          ? 'Purchases restored. Premium is active!'
+                          : 'No previous purchases found, or restore failed. '
+                            'Make sure RevenueCat is configured.',
+                    ),
+                    backgroundColor:
+                        restored ? AppTheme.successColor : AppTheme.warningColor,
+                  ),
+                );
+              },
               child: Text(
                 'Restore Purchases',
                 style: TextStyle(color: AppTheme.textSecondary),

@@ -59,6 +59,95 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  void _showForgotPasswordDialog(BuildContext context) {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final emailCtrl = TextEditingController(text: _emailController.text.trim());
+    var loading = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocalState) => AlertDialog(
+          backgroundColor: AppTheme.surfaceColor,
+          title: const Text('Reset Password', style: TextStyle(color: Colors.white)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Apna email daalein, hum password reset link aapke inbox mein bhej denge.',
+                style: TextStyle(color: Colors.white70),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: emailCtrl,
+                keyboardType: TextInputType.emailAddress,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  labelStyle: TextStyle(color: Colors.white70),
+                  prefixIcon: Icon(Icons.email_outlined),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: loading
+                  ? null
+                  : () async {
+                      final email = emailCtrl.text.trim();
+                      if (email.isEmpty || !email.contains('@')) {
+                        scaffoldMessenger.showSnackBar(
+                          const SnackBar(
+                            content: Text('Valid email daalein'),
+                            backgroundColor: AppTheme.errorColor,
+                          ),
+                        );
+                        return;
+                      }
+                      setLocalState(() => loading = true);
+                      try {
+                        await _authService.sendPasswordReset(email);
+                        if (ctx.mounted) Navigator.pop(ctx);
+                        scaffoldMessenger.showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Password reset email bhej diya gaya. Apne inbox check karein.',
+                            ),
+                            backgroundColor: AppTheme.successColor,
+                          ),
+                        );
+                      } catch (e) {
+                        setLocalState(() => loading = false);
+                        scaffoldMessenger.showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Reset email bhejne mein error aaya. Dubara try karein.',
+                            ),
+                            backgroundColor: AppTheme.errorColor,
+                          ),
+                        );
+                      }
+                    },
+              child: loading
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Text('Send'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -157,6 +246,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
+                  if (_isLogin)
+                    TextButton(
+                      onPressed: _isLoading
+                          ? null
+                          : () => _showForgotPasswordDialog(context),
+                      child: const Text(
+                        'Forgot Password?',
+                        style: TextStyle(color: AppTheme.secondaryColor),
+                      ),
+                    ),
                   TextButton(
                     onPressed: () {
                       setState(() {

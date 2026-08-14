@@ -1,0 +1,18 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+  <!-- Outer shield (GuardPost green) -->
+  <path
+      android:fillColor="#00E676"
+      android:pathData="M54,6 L98,27 V56 C98,86 76,102 54,106 C32,102 10,86 10,56 V27 Z" />
+  <!-- Inner shield (dark) -->
+  <path
+      android:fillColor="#0D1117"
+      android:pathData="M54,22 L82,37 V56 C82,78 68,90 54,94 C40,90 26,78 26,56 V37 Z" />
+  <!-- White check mark -->
+  <path
+      android:fillColor="#FFFFFF"
+      android:pathData="M39,55 L49,65 L71,41 L78,48 L49,79 L33,60 Z" />
+</vector>

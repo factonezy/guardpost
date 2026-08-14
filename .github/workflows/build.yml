@@ -40,12 +40,12 @@ jobs:
       - name: Build APK (Release)
         env:
           JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
-        run: flutter build apk --release --split-per-abi --dart-define=SAFE_BROWSING_API_KEY=${{ secrets.SAFE_BROWSING_API_KEY }} --no-tree-shake-icons
+        run: flutter build apk --release --split-per-abi --dart-define=SAFE_BROWSING_API_KEY=${{ secrets.SAFE_BROWSING_API_KEY }} --dart-define=HIBP_API_KEY=${{ secrets.HIBP_API_KEY }} --dart-define=REVENUECAT_API_KEY=${{ secrets.REVENUECAT_API_KEY }} --no-tree-shake-icons
 
       - name: Build APK (Universal)
         env:
           JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
-        run: flutter build apk --release --dart-define=SAFE_BROWSING_API_KEY=${{ secrets.SAFE_BROWSING_API_KEY }} --no-tree-shake-icons
+        run: flutter build apk --release --dart-define=SAFE_BROWSING_API_KEY=${{ secrets.SAFE_BROWSING_API_KEY }} --dart-define=HIBP_API_KEY=${{ secrets.HIBP_API_KEY }} --dart-define=REVENUECAT_API_KEY=${{ secrets.REVENUECAT_API_KEY }} --no-tree-shake-icons
 
       - name: Upload APKs
         uses: actions/upload-artifact@v4
@@ -55,7 +55,7 @@ jobs:
           if-no-files-found: error
 
       - name: Build App Bundle
-        run: flutter build appbundle --release --dart-define=SAFE_BROWSING_API_KEY=${{ secrets.SAFE_BROWSING_API_KEY }}
+        run: flutter build appbundle --release --dart-define=SAFE_BROWSING_API_KEY=${{ secrets.SAFE_BROWSING_API_KEY }} --dart-define=HIBP_API_KEY=${{ secrets.HIBP_API_KEY }} --dart-define=REVENUECAT_API_KEY=${{ secrets.REVENUECAT_API_KEY }}
 
       - name: Upload App Bundle
         uses: actions/upload-artifact@v4

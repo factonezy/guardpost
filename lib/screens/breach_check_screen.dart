@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../services/breach_check_service.dart';
+import '../services/notification_service.dart';
 
 class BreachCheckScreen extends StatefulWidget {
   const BreachCheckScreen({super.key});
@@ -35,6 +36,15 @@ class _BreachCheckScreenState extends State<BreachCheckScreen> {
 
     try {
       final result = await _breachService.checkEmail(email);
+      // If the email is in a breach, push a local notification alert.
+      if (result.status == BreachStatus.breached && result.breaches.isNotEmpty) {
+        final breach = result.breaches.first;
+        await NotificationService.sendBreachAlert(
+          email: email,
+          breachName: breach.name,
+          breachDate: breach.breachDate,
+        );
+      }
       setState(() {
         _result = result;
         _hasChecked = true;
@@ -42,6 +52,7 @@ class _BreachCheckScreenState extends State<BreachCheckScreen> {
       });
     } catch (e) {
       setState(() => _isLoading = false);
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.errorColor),
       );
@@ -120,6 +131,55 @@ class _BreachCheckScreenState extends State<BreachCheckScreen> {
   }
 
   Widget _buildResultCard() {
+    final result = _result!;
+    final status = result.status;
+
+    // Determine presentation based on the precise status.
+    late final IconData icon;
+    late final Color color;
+    late final String title;
+    late final String subtitle;
+    late final bool showBreaches;
+
+    switch (status) {
+      case BreachStatus.breached:
+        icon = Icons.warning_amber;
+        color = AppTheme.errorColor;
+        title = 'Breach Found!';
+        subtitle = '${result.breachCount} breach(es) detected';
+        showBreaches = true;
+      case BreachStatus.safe:
+        icon = Icons.check_circle;
+        color = AppTheme.successColor;
+        title = 'No Breach Found';
+        subtitle = 'Your email seems safe';
+        showBreaches = false;
+      case BreachStatus.configMissing:
+        icon = Icons.cloud_off;
+        color = AppTheme.warningColor;
+        title = 'Unavailable';
+        subtitle = result.message ?? 'Breach check is currently unavailable.';
+        showBreaches = false;
+      case BreachStatus.authError:
+        icon = Icons.key_off;
+        color = AppTheme.warningColor;
+        title = 'API Error';
+        subtitle = result.message ?? 'Authentication error.';
+        showBreaches = false;
+      case BreachStatus.networkError:
+        icon = Icons.wifi_off;
+        color = AppTheme.warningColor;
+        title = 'Network Error';
+        subtitle = result.message ?? 'Could not reach the breach service.';
+        showBreaches = false;
+      case BreachStatus.unexpected:
+        icon = Icons.error_outline;
+        color = AppTheme.warningColor;
+        title = 'Service Error';
+        subtitle = result.message ?? 'Unexpected response from the server.';
+        showBreaches = false;
+    }
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -128,28 +188,22 @@ class _BreachCheckScreenState extends State<BreachCheckScreen> {
           children: [
             Row(
               children: [
-                Icon(
-                  _result!.isBreached ? Icons.warning_amber : Icons.check_circle,
-                  color: _result!.isBreached ? AppTheme.errorColor : AppTheme.successColor,
-                  size: 32,
-                ),
+                Icon(icon, color: color, size: 32),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _result!.isBreached ? 'Breach Found!' : 'No Breach Found',
+                        title,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: _result!.isBreached ? AppTheme.errorColor : AppTheme.successColor,
+                          color: color,
                         ),
                       ),
                       Text(
-                        _result!.isBreached
-                            ? '${_result!.breachCount} breach(es) detected'
-                            : 'Your email seems safe',
+                        subtitle,
                         style: TextStyle(color: AppTheme.textSecondary),
                       ),
                     ],
@@ -157,7 +211,7 @@ class _BreachCheckScreenState extends State<BreachCheckScreen> {
                 ),
               ],
             ),
-            if (_result!.isBreached) ...[
+            if (showBreaches) ...[
               const SizedBox(height: 16),
               const Divider(color: AppTheme.borderColor),
               const SizedBox(height: 8),

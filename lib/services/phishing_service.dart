@@ -44,9 +44,9 @@ class PhishingScanService {
       );
     } catch (e) {
       return PhishingResult(
-        isSafe: true,
-        issues: ['URL scan karne mein error aaya. Link safe maan liya.'],
-        score: 100,
+        isSafe: false, // Be cautious, don't assume it's safe if the scan failed
+        issues: ['URL scan karne mein error aaya. Scan complete nahi ho saka.'],
+        score: 50, // Neutral score
         domain: Uri.tryParse(url)?.host ?? 'unknown',
         error: e.toString(),
       );

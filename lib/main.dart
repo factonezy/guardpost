@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'services/notification_service.dart';
+import 'services/subscription_service.dart';
 import 'screens/splash_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
@@ -13,6 +15,18 @@ import 'theme/app_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  // Notification setup must never crash the app if it fails.
+  try {
+    await NotificationService.initialize();
+  } catch (e) {
+    debugPrint('NotificationService init failed (non-fatal): $e');
+  }
+  // RevenueCat setup is optional; never let it crash startup.
+  try {
+    await SubscriptionService.configure();
+  } catch (e) {
+    debugPrint('SubscriptionService configure failed (non-fatal): $e');
+  }
   runApp(const GuardPostApp());
 }
 

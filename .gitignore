@@ -36,3 +36,8 @@ ios/Flutter/Flutter.podspec
 # OS
 .DS_Store
 Thumbs.db
+
+# Release signing (do NOT commit real keystore or key.properties)
+android/key.properties
+android/**/upload-keystore.jks
+android/app/upload-keystore.jks

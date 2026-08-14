@@ -1,6 +1,5 @@
 import 'package:guardpost/api_keys.dart';
 import 'dart:convert';
-import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 
 class BreachCheckService {
@@ -10,15 +9,22 @@ class BreachCheckService {
 
   /// Check if email has been in breaches using HIBP (k-anonymity model)
   Future<BreachResult> checkEmail(String email) async {
-    try {
-      final emailHash = sha1.convert(utf8.encode(email.toLowerCase().trim()))
-          .toString()
-          .toUpperCase();
-      final prefix = emailHash.substring(0, 5);
-      final suffix = emailHash.substring(5);
+    // If the API key is missing we cannot perform a real check.
+    // Never report this as "safe" — surface the configuration issue instead.
+    if (ApiKeys.hibpApiKey.isEmpty) {
+      return BreachResult(
+        status: BreachStatus.configMissing,
+        isBreached: false,
+        breachCount: 0,
+        breaches: [],
+        message:
+            'Breach check is currently unavailable. API configuration is required.',
+      );
+    }
 
+    try {
       final response = await http.get(
-        Uri.parse('$_hibpBaseUrl/breachedaccount/$email'),
+        Uri.parse('$_hibpBaseUrl/breachedaccount/${Uri.encodeComponent(email)}'),
         headers: {
           'hibp-api-key': ApiKeys.hibpApiKey,
           'User-Agent': _hibpUserAgent,
@@ -28,6 +34,7 @@ class BreachCheckService {
       if (response.statusCode == 200) {
         final List<dynamic> breaches = json.decode(response.body);
         return BreachResult(
+          status: BreachStatus.breached,
           isBreached: true,
           breachCount: breaches.length,
           breaches: breaches.map((b) => BreachInfo(
@@ -42,56 +49,44 @@ class BreachCheckService {
           )).toList(),
         );
       } else if (response.statusCode == 404) {
-        return BreachResult(isBreached: false, breachCount: 0, breaches: []);
+        // HIBP returns 404 specifically to mean "not found in any breach".
+        return BreachResult(
+          status: BreachStatus.safe,
+          isBreached: false,
+          breachCount: 0,
+          breaches: [],
+        );
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
+        // Authentication failure must NOT be treated as "no breach".
+        return BreachResult(
+          status: BreachStatus.authError,
+          isBreached: false,
+          breachCount: 0,
+          breaches: [],
+          message:
+              'Breach check failed: API key authentication error (${response.statusCode}).',
+        );
       } else {
-        // Fallback: use k-anonymity search
-        return await _checkKAnonymity(
-          prefix, suffix);
+        // Any other status (rate limit, server error, etc.) is NOT "safe".
+        return BreachResult(
+          status: BreachStatus.unexpected,
+          isBreached: false,
+          breachCount: 0,
+          breaches: [],
+          message:
+              'Breach check failed: unexpected server response (${response.statusCode}).',
+        );
       }
     } catch (e) {
-      // Fallback to pwned password check to at least give some value
-      return await _checkKAnonymity(
-        sha1.convert(utf8.encode(email)).toString().toUpperCase().substring(0, 5),
-        sha1.convert(utf8.encode(email)).toString().toUpperCase().substring(5),
+      // A network/parse failure must NOT be reported as "no breach found".
+      return BreachResult(
+        status: BreachStatus.networkError,
+        isBreached: false,
+        breachCount: 0,
+        breaches: [],
+        message: 'Breach check failed: network error. Please try again.',
       );
     }
-  }
-
-  /// k-anonymity password search (privacy-preserving)
-  Future<BreachResult> _checkKAnonymity(String prefix, String suffix) async {
-    try {
-      final response = await http.get(
-        Uri.parse('https://api.pwnedpasswords.com/range/$prefix'),
-        headers: {'User-Agent': _hibpUserAgent},
-      );
-      if (response.statusCode == 200) {
-        final hashes = response.body.split('\n');
-        for (final hash in hashes) {
-          final parts = hash.split(':');
-          if (parts[0] == suffix) {
-            final count = int.tryParse(parts[1].trim()) ?? 0;
-            return BreachResult(
-              isBreached: count > 0,
-              breachCount: count,
-              breaches: count > 0 ? [
-                BreachInfo(
-                  name: 'Password Leak',
-                  domain: 'unknown',
-                  breachDate: '',
-                  description: 'Email ya password data breach mein mila hai. $count baar leak hua.',
-                  dataClasses: ['Email', 'Password'],
-                  pwnCount: count,
-                  isVerified: false,
-                  isSpamList: false,
-                ),
-              ] : [],
-            );
-          }
-        }
-        return BreachResult(isBreached: false, breachCount: 0, breaches: []);
-      }
-    } catch (_) {}
-    return BreachResult(isBreached: false, breachCount: 0, breaches: []);
   }
 
   /// Check password strength
@@ -160,15 +155,28 @@ class BreachCheckService {
   }
 }
 
+enum BreachStatus {
+  breached,
+  safe,
+  configMissing,
+  authError,
+  networkError,
+  unexpected,
+}
+
 class BreachResult {
+  final BreachStatus status;
   final bool isBreached;
   final int breachCount;
   final List<BreachInfo> breaches;
+  final String? message;
 
   BreachResult({
+    required this.status,
     required this.isBreached,
     required this.breachCount,
     required this.breaches,
+    this.message,
   });
 }
 

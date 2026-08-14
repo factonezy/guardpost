@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_theme.dart';
 import '../models/security_scan.dart';
 import '../services/breach_check_service.dart';
+import '../services/phishing_service.dart';
+import '../services/auth_service.dart';
 
 class SecurityScoreScreen extends StatefulWidget {
   const SecurityScoreScreen({super.key});
@@ -13,10 +15,13 @@ class SecurityScoreScreen extends StatefulWidget {
 
 class _SecurityScoreScreenState extends State<SecurityScoreScreen> {
   final _breachService = BreachCheckService();
+  final _phishingService = PhishingScanService();
+  final _passwordController = TextEditingController();
+  final _urlController = TextEditingController();
   SecurityScanResult? _scanResult;
   bool _isLoading = false;
   bool _emailChecked = false;
-  bool _passwordChecked = false;
+  bool _obscurePassword = true;
   String? _email;
 
   @override
@@ -25,8 +30,17 @@ class _SecurityScoreScreenState extends State<SecurityScoreScreen> {
     _loadSavedData();
   }
 
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    _urlController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadSavedData() async {
     final prefs = await SharedPreferences.getInstance();
+    final auth = AuthService();
+    _email = await auth.getSavedEmail();
     final score = prefs.getInt('security_score');
     if (score != null) {
       setState(() {
@@ -36,7 +50,6 @@ class _SecurityScoreScreenState extends State<SecurityScoreScreen> {
           phishingScore: prefs.getInt('phishing_score') ?? 0,
         );
         _emailChecked = prefs.getBool('email_checked') ?? false;
-        _passwordChecked = prefs.getBool('password_checked') ?? false;
       });
     }
   }
@@ -46,30 +59,51 @@ class _SecurityScoreScreenState extends State<SecurityScoreScreen> {
 
     int emailScore = 0;
     int passwordScore = 0;
+    int phishingScore = 0;
 
-    // Check email breach
-    if (!_emailChecked && _email != null) {
+    // Email breach (only if we have the user's email and it wasn't checked before)
+    if (_email != null && !_emailChecked) {
       final result = await _breachService.checkEmail(_email!);
-      emailScore = result.isBreached ? 20 : 90;
+      if (result.status == BreachStatus.breached) {
+        emailScore = 20;
+      } else if (result.status == BreachStatus.safe) {
+        emailScore = 90;
+      } else {
+        // Unknown / unavailable — don't assume safe, use a neutral score.
+        emailScore = 50;
+      }
     } else {
       emailScore = _scanResult?.emailBreachScore ?? 0;
     }
 
-    // Password check (with default)
-    final passwordResult = _breachService.checkPasswordStrength('Sample123!@');
-    passwordScore = passwordResult.score;
+    // Password check (uses the actual password the user enters, if provided)
+    final password = _passwordController.text;
+    if (password.isNotEmpty) {
+      passwordScore = _breachService.checkPasswordStrength(password).score;
+    } else {
+      passwordScore = _scanResult?.passwordScore ?? 0;
+    }
+
+    // Phishing check (uses the actual URL the user enters, if provided)
+    final url = _urlController.text.trim();
+    if (url.isNotEmpty) {
+      final phishingResult = await _phishingService.scanUrl(url);
+      phishingScore = phishingResult.score;
+    } else {
+      phishingScore = _scanResult?.phishingScore ?? 0;
+    }
 
     final result = SecurityScanResult(
       emailBreachScore: emailScore,
       passwordScore: passwordScore,
-      phishingScore: 50,
+      phishingScore: phishingScore,
     );
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('security_score', result.totalScore);
     await prefs.setInt('email_breach_score', emailScore);
     await prefs.setInt('password_score', passwordScore);
-    await prefs.setInt('phishing_score', 50);
+    await prefs.setInt('phishing_score', phishingScore);
     await prefs.setBool('email_checked', _emailChecked || _email != null);
     await prefs.setBool('password_checked', true);
 
@@ -233,6 +267,60 @@ class _SecurityScoreScreenState extends State<SecurityScoreScreen> {
                 ),
               ],
             ],
+            const SizedBox(height: 24),
+            // URL input for the phishing portion of the scan
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Suspicious link daalein (optional)',
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _urlController,
+                      decoration: const InputDecoration(
+                        labelText: 'URL / Link',
+                        prefixIcon: Icon(Icons.link),
+                      ),
+                      keyboardType: TextInputType.url,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Password input for the scan
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Apna password daalein (optional)',
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        prefixIcon: const Icon(Icons.lock_outlined),
+                        suffixIcon: IconButton(
+                          icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: 24),
             // Scan button
             SizedBox(
