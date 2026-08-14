@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../services/subscription_service.dart';
+import 'breach_check_screen.dart';
+import 'dark_web_monitoring_screen.dart';
+import 'family_plan_screen.dart';
+import 'instant_alerts_screen.dart';
+import 'scan_history_screen.dart';
+import 'priority_support_screen.dart';
 
 class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({super.key});
@@ -85,12 +91,60 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               ),
             const SizedBox(height: 24),
             // Features
-            ..._buildPremiumFeature(Icons.verified, 'Unlimited Breach Checks', 'Daily auto-scan for all your emails'),
-            ..._buildPremiumFeature(Icons.dark_mode, 'Dark Web Monitoring', 'Real-time dark web leak detection'),
-            ..._buildPremiumFeature(Icons.family_restroom, 'Family Plan', 'Add upto 5 family members'),
-            ..._buildPremiumFeature(Icons.notifications_active, 'Instant Alerts', 'Push notification for new breaches'),
-            ..._buildPremiumFeature(Icons.history, 'Full History', 'Complete scan history & trend analysis'),
-            ..._buildPremiumFeature(Icons.support_agent, 'Priority Support', '24/7 priority customer support'),
+            ..._buildPremiumFeature(
+              icon: Icons.verified,
+              title: 'Unlimited Breach Checks',
+              subtitle: 'Run as many email breach checks as you want',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const BreachCheckScreen()),
+              ),
+            ),
+            ..._buildPremiumFeature(
+              icon: Icons.dark_mode,
+              title: 'Dark Web Monitoring',
+              subtitle: 'Continuous monitoring (requires setup)',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const DarkWebMonitoringScreen()),
+              ),
+            ),
+            ..._buildPremiumFeature(
+              icon: Icons.family_restroom,
+              title: 'Family Plan',
+              subtitle: 'Protect up to 5 family members',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const FamilyPlanScreen()),
+              ),
+            ),
+            ..._buildPremiumFeature(
+              icon: Icons.notifications_active,
+              title: 'Instant Alerts',
+              subtitle: 'Breach alerts to your device',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const InstantAlertsScreen()),
+              ),
+            ),
+            ..._buildPremiumFeature(
+              icon: Icons.history,
+              title: 'Full History',
+              subtitle: 'Your past scan results',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ScanHistoryScreen()),
+              ),
+            ),
+            ..._buildPremiumFeature(
+              icon: Icons.support_agent,
+              title: 'Priority Support',
+              subtitle: 'Premium support (see app for availability)',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const PrioritySupportScreen()),
+              ),
+            ),
             const SizedBox(height: 24),
             // Pricing cards
             Row(
@@ -167,32 +221,51 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     );
   }
 
-  List<Widget> _buildPremiumFeature(IconData icon, String title, String subtitle) {
+  List<Widget> _buildPremiumFeature({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
     return [
       Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: AppTheme.primaryColor, size: 24),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Semantics(
+            button: true,
+            label: '$title. $subtitle',
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(icon, color: AppTheme.primaryColor, size: 24),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(title,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, color: Colors.white)),
+                        Text(subtitle,
+                            style: TextStyle(
+                                color: AppTheme.textSecondary, fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right, color: AppTheme.textSecondary),
+                ],
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                    Text(subtitle, style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../services/breach_check_service.dart';
 import '../services/notification_service.dart';
+import '../services/scan_history_service.dart';
 
 class BreachCheckScreen extends StatefulWidget {
   const BreachCheckScreen({super.key});
@@ -50,6 +51,14 @@ class _BreachCheckScreenState extends State<BreachCheckScreen> {
         _hasChecked = true;
         _isLoading = false;
       });
+      // Persist the REAL result so Full History shows genuine data only.
+      await ScanHistoryService.addEntry(ScanHistoryEntry(
+        type: 'breach',
+        email: email,
+        status: result.status.name,
+        breachCount: result.breachCount,
+        timestamp: DateTime.now(),
+      ));
     } catch (e) {
       setState(() => _isLoading = false);
       if (!mounted) return;
