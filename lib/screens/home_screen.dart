@@ -16,6 +16,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  static const String privacyPolicyUrl = 'https://factonezy.github.io/guardpost/';
   final _authService = AuthService();
   final _subscriptionService = SubscriptionService();
   int _currentNavIndex = 0;
@@ -529,7 +530,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const Divider(color: AppTheme.borderColor),
                   _buildProfileOption(Icons.info_outline, 'About GuardPost', () => _showAbout(context)),
                   const Divider(color: AppTheme.borderColor),
-                  _buildProfileOption(Icons.description_outlined, 'Privacy Policy', () => _launchUrl('https://guardpost.app/privacy')),
+                  _buildProfileOption(Icons.description_outlined, 'Privacy Policy', () => _launchUrl(privacyPolicyUrl)),
                   const Divider(color: AppTheme.borderColor),
                   _buildProfileOption(Icons.logout, 'Logout', () async {
                     await _authService.signOut();
@@ -659,7 +660,7 @@ class _HomeScreenState extends State<HomeScreen> {
               title: const Text('Privacy Policy', style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.of(ctx).pop();
-                _launchUrl('https://guardpost.app/privacy');
+                _launchUrl(privacyPolicyUrl);
               },
             ),
           ],
